@@ -51,7 +51,7 @@ macro_rules! not_supported {
     };
 }
 
-// Generates the deserialize function for usigned integers.
+// Generates the deserialize function for unsigned integers.
 macro_rules! deserialize_u {
     ($fn_name: ident, $visitor_fn: ident, $type: ty) => {
         fn $fn_name<V>(self, visitor: V) -> DecodingResult<V::Value>
@@ -131,7 +131,7 @@ macro_rules! deserialize_u {
                         visitor.$visitor_fn(value)
                     } else {
                         Err(Error::Message(format!(
-                            "Numbers cannot be represented with stings of {} bytes.",
+                            "Numbers cannot be represented with strings of {} bytes.",
                             length
                         )))
                     }
@@ -826,7 +826,7 @@ mod tests {
     }
 
     #[test]
-    fn test_string() {
+    fn test_decoding_string() {
         let values = [
             "".to_string(),
             "a".to_string(),

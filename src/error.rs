@@ -1,5 +1,6 @@
 use serde::{de, ser};
 use std::fmt::{self, Display};
+use std::io;
 
 pub type Result<T> = ::std::result::Result<T, Error>;
 
@@ -7,6 +8,7 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 pub enum Error {
     TrailingCharacters,
     UnexpectedEof,
+    IOError,
 
     DeserializeAnyNotSupported,
     DeserializeSignedIntegerNotSupported,
@@ -20,7 +22,17 @@ pub enum Error {
     // chars to be represented as a direct byte. IOW `0x00` should be used instead of `0x8100`.
     InvalidIndirection,
 
+    SerializeSignedIntegerNotSupported,
+    SerializeFloatNotSupported,
+    SerializeBytesIsTooBig,
+
     Message(String),
+}
+
+impl From<io::Error> for Error {
+    fn from(_: io::Error) -> Self {
+        Error::IOError
+    }
 }
 
 impl ser::Error for Error {
@@ -42,6 +54,7 @@ impl Display for Error {
                 formatter.write_str("Input data has trailling characters.")
             }
             Error::UnexpectedEof => formatter.write_str("Input data ended unexpectedly."),
+            Error::IOError => formatter.write_str("Writer failed unexpectedly."),
             Error::DeserializeAnyNotSupported => {
                 formatter.write_str("RLP is not self-describing. deserialize_any is not supported.")
             }
@@ -61,6 +74,15 @@ impl Display for Error {
                 formatter.write_str("Data is not encoded in an optimal way, rejected.")
             }
             Error::Message(msg) => formatter.write_str(msg),
+            Error::SerializeSignedIntegerNotSupported => {
+                formatter.write_str("Parity compatible encoder does not support signed integers.")
+            }
+            Error::SerializeFloatNotSupported => {
+                formatter.write_str("Parity compatible encoder does not support floats.")
+            }
+            Error::SerializeBytesIsTooBig => {
+                formatter.write_str("Bytes data is too big to be encoded.")
+            }
         }
     }
 }
